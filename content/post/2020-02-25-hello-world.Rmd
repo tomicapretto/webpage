@@ -1,0 +1,32 @@
+---
+title: "Hello world"
+author: "Tomás Capretto"
+date: 2020-02-25
+output: html_document
+description: First entry
+katex: true
+markup: "mmark"
+---
+
+# Text
+
+This is my first entry in my webpage created with `blogdown`.
+
+# Math
+
+Mathematical formulas are available
+
+$$
+x = a^2 + b^2 + c^2
+$$
+
+And it can also be inline $h = x^2$.
+
+# Code 
+
+And finally, this is some example `R` code (with output).
+
+```{r}
+quantile(rnorm(1000))
+```
+

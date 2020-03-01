@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tomás Capretto</title>
+    <link>/</link>
+    <description>Recent content on Tomás Capretto</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sat, 29 Feb 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>TACC 2019 Slides</title>
+      <link>/slides/2020-02-29-tacc-2019-slides/</link>
+      <pubDate>Sat, 29 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/slides/2020-02-29-tacc-2019-slides/</guid>
+      <description>I gave a Lighting Talk about density estimation at Taller Argentino de Computación Científica 2019 in San Luis, Argentina.</description>
+    </item>
+    
+    <item>
+      <title>Hello world</title>
+      <link>/post/2020-02-25-hello-world/</link>
+      <pubDate>Tue, 25 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020-02-25-hello-world/</guid>
+      <description>Text This is my first entry in my webpage created with blogdown.</description>
+    </item>
+    
+    <item>
+      <title>About</title>
+      <link>/about/</link>
+      <pubDate>Thu, 20 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/about/</guid>
+      <description>I am a PhD student in Statistics. I am full-time dedicated to study and research thanks to a Doctoral Fellowship by CONICET (Argentina).</description>
+    </item>
+    
+    <item>
+      <title>First publication in projects</title>
+      <link>/projects/2020-02-20-first-project-pub/</link>
+      <pubDate>Thu, 20 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/projects/2020-02-20-first-project-pub/</guid>
+      <description>R MarkdownThis is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents.</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>/archives/</link>
+      <pubDate>Tue, 28 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/archives/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>
