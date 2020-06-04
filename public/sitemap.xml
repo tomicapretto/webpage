@@ -58,7 +58,16 @@
   </url>
   
   <url>
+    <loc>/files/report/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>/categories/</loc>
+  </url>
+  
+  <url>
+    <loc>/files/</loc>
   </url>
   
   <url>
