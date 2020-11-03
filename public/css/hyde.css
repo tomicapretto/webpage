@@ -149,7 +149,7 @@ footer {
 
 @media (min-width: 48em) {
   .content {
-    max-width: 38rem;
+    max-width: 42rem;
     margin-left: 20rem;
     margin-right: 2rem;
     margin-bottom: -40px;
@@ -230,4 +230,5 @@ ul.posts {
 .social-icons a:hover,
 .social-icons a:focus {
   text-decoration: none !important;
+  color:#de935f;
 }

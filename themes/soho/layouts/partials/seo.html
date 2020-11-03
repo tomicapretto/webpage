@@ -52,6 +52,10 @@
     "description": "{{ .Site.Params.description }}"
   }
   </script>
+  
+  <link rel="stylesheet" href={{"css/lioshi.css"| absURL}} id="theme-stylesheet">
+  <script src={{ "js/highlight.pack.js" | absURL }}></script>
+  <script>hljs.initHighlightingOnLoad();</script>
 
   {{ if eq .Type "post" }}
   <script type="application/ld+json">

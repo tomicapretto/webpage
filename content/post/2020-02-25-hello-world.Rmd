@@ -4,7 +4,6 @@ author: "Tomás Capretto"
 date: 2020-02-25
 output: html_document
 description: First entry
-katex: true
 markup: "mmark"
 ---
 
