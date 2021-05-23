@@ -1,0 +1,198 @@
+---
+title: "Why Bambi?"
+author: "Tomás Capretto"
+date: 2021-05-22
+output: html_document
+description: A quick example comparing how to fit a GLM with Bambi and PyMC3
+---
+
+## Introduction
+
+I’ve been thinking about writing a new blog post for a while now, and it was 
+just a few hours ago that I realized I could write about something quite curious
+that happened to me while trying to replicate a [Bambi](https://bambinos.github.io/bambi/) 
+model with [PyMC3](https://docs.pymc.io/).
+
+A couple of weeks ago [Agustina Arroyuelo](https://twitter.com/AgustinaArroyu1)
+told me she was trying to replicate a [model](https://bambinos.github.io/bambi/master/notebooks/wald_gamma_glm.html#Wald) 
+in an example notebook in Bambi and wanted my opinion on what she was doing. 
+After many attempts, neither of us could replicate the model successfully. It
+turned out to be we were messing up with the shapes of the priors and also had
+some troubles with the design matrix.
+
+Let's go straight to our problem and see how Bambi can make our Bayesian 
+modeling life much easier.
+
+## Setup
+
+We use the `reticulate` package to enable Python in our R Markdown document. 
+`"rbambi"` is just a conda environment that has the latest version of Bambi 
+installed.
+
+```{r}
+library(ggplot2)
+library(reticulate)
+use_condaenv("rbambi", required = TRUE)
+knitr::opts_chunk$set(eval = TRUE)
+```
+
+```{python py-setup}
+import arviz as az
+import bambi as bmb
+import numpy as np
+import pandas as pd
+import pymc3 as pm
+import theano.tensor as tt
+
+np.random.seed(1234)
+```
+
+## The problem
+
+In this notebook we use a data set consisting of 67856 insurance policies and 
+4624 (6.8%) claims in Australia between 2004 and 2005. 
+The original source of this dataset is the book [Generalized Linear Models for 
+Insurance Data](http://www.businessandeconomics.mq.edu.au/our_departments/Applied_Finance_and_Actuarial_Studies/research/books/GLMsforInsuranceData)
+by Piet de Jong and Gillian Z. Heller.
+
+
+```{python}
+data = pd.read_csv(
+  "https://courses.ms.ut.ee/2020/glm/spring/uploads/Main/carclaims.csv"
+)
+data = data[data["claimcst0"] > 0]
+```
+
+In this example we are going to use the binned age, the gender, and the area of 
+residence to predict the amount of the claim, conditional on the existence of 
+the claim because we are only working with observations where there is a claim.
+
+## Model with PyMC3
+
+To fit the model with PyMC3 we first need to create the model matrix. We need
+to represent `age`, `area`, and `gender` with dummy variables because they are
+categoric. We can think of the following objects as sub-matrices of the 
+design matrix in the model.
+
+```{python}
+intercept = np.ones((len(data), 1))
+age = pd.get_dummies(data["agecat"], drop_first=True).to_numpy()
+area = pd.get_dummies(data["area"], drop_first=True).to_numpy()
+gender = pd.get_dummies(data["gender"], drop_first=True).to_numpy()
+```
+
+Then we just stack horizontally these sub-matrices and convert the result to a 
+Theano tensor variable so we can compute the dot product between this matrix and
+the vector of coefficients.
+
+```{python}
+X = np.hstack([intercept, age, area, gender])
+X = tt.as_tensor_variable(X)
+```
+
+### Fit
+
+We start declaring the priors for each of the predictors in the model. They are
+all independent Gaussian distributions. You may wonder where I took the values
+for the parameters of these distributions. They are similar to Bambi's default
+values for this particular problem, but they are not the main issue in this
+post.
+
+At this stage, it is extremely important to give appropiate shapes to all the
+objects we create in the model. For example, `β_age` is a random variable that
+represents the coefficients for the age variable. Since 5 dummy variables are
+used to represent the age, `β_age` has `shape=(5, 1)`, as well as the arrays
+passed to `mu` and `sigma`.
+
+```{python}
+# Create model and sample posterior
+with pm.Model() as model_pymc3:  
+    # Build predictors
+    β_0 = pm.Normal(
+        "β_0", 
+        mu=np.array([[10]]), 
+        sigma=np.array([[3]]),
+        shape=(1, 1)
+    )  
+    β_age = pm.Normal(
+        "β_age",       
+        mu=np.array([[0] * 5]).T, 
+        sigma=np.array([[5] * 5]).T,
+        shape=(5, 1)
+    )
+    β_gender = pm.Normal(
+        "β_gender", 
+        mu=np.array([[0]]), 
+        sigma=np.array([[1.304491]]),
+        shape=(1, 1)
+    )
+    β_area = pm.Normal(
+        "β_area", 
+        mu=np.array([[0] * 5]).T, 
+        sigma=np.array([[5] * 5]).T,
+        shape=(5, 1)
+    )
+    
+    # Compute linear predictor
+    β = tt.concatenate([β_0, β_age, β_gender, β_area], axis=0)
+    # Transform linear predictor
+    mu = tt.exp(X.dot(β))
+      
+    response = np.array([data["claimcst0"]]).T
+    pm.Wald(
+      "claim", 
+      mu=mu, 
+      lam=pm.HalfCauchy("claim_lam", beta=1), 
+      observed=response
+    )
+    idata_pymc = pm.sample(tune=2000, return_inferencedata=True)
+
+```
+
+## Fil model with Bambi
+
+```{python}
+model_bambi= bmb.Model(
+  "claimcst0 ~ C(agecat) + gender + area", 
+  data, family = "wald", link = "log"
+)
+idata_bambi = model_bambi.fit(tune=2000)
+```
+
+## Check results are equivalent
+
+```{python}
+summary_pymc = az.summary(idata_pymc)
+summary_bambi = az.summary(idata_bambi)
+```
+
+```{r}
+summary_pymc = py$summary_pymc[1:4]
+summary_bambi = py$summary_bambi[1:4]
+
+names = c(
+  "β_0", "β_age[0]", "β_age[1]", "β_age[2]", "β_age[3]", "β_age[4]",
+  "β_gender", "β_area[0]", "β_area[1]", "β_area[2]", "β_area[3]",
+  "β_area[4]", "λ"
+)
+summary_pymc$row = seq(1, 26, by = 2) + 0.25
+summary_bambi$row = seq(1, 26, by = 2)  - 0.25
+summary_pymc$model = "PyMC3"
+summary_bambi$model = "Bambi"
+summary_pymc$names = names
+summary_bambi$names = names
+summary_pymc$panel = c("Intercept", rep("Effects", 11), "Dispersion")
+summary_bambi$panel = c("Intercept", rep("Effects", 11), "Dispersion")
+summary = rbind(summary_pymc, summary_bambi)
+```
+
+
+```{r}
+ggplot(summary, aes(color = model)) +
+  geom_point(aes(mean, row)) +
+  geom_segment(aes(x = `hdi_3%`, xend=`hdi_97%`, y = row, yend = row)) + 
+  facet_grid(cols = vars(panel), scales = "free")
+```
+
+
+## Conclusion
