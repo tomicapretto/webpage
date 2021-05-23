@@ -6,14 +6,14 @@
     <description>Recent content on Tomás Capretto</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 22 May 2021 00:00:00 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 23 May 2021 00:00:00 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Why Bambi?</title>
-      <link>/post/bambi-wald/</link>
-      <pubDate>Sat, 22 May 2021 00:00:00 +0000</pubDate>
+      <link>/post/2021-23-05-bambi-wald/</link>
+      <pubDate>Sun, 23 May 2021 00:00:00 +0000</pubDate>
       
-      <guid>/post/bambi-wald/</guid>
-      <description>Introduction I’ve been thinking about writing a new blog post for a while now, and it was just a few hours ago that I realized I could write about something quite curious that happened to me while trying to replicate a Bambi model with PyMC3.</description>
+      <guid>/post/2021-23-05-bambi-wald/</guid>
+      <description>Introduction I’ve been thinking about writing a new blog post for a while now but honestly there was nothing coming to my mind that made me think “Oh, yeah, this is interesting, it can be useful for someone else”.</description>
     </item>
     
     <item>

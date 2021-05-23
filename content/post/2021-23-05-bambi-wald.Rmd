@@ -1,0 +1,268 @@
+---
+title: "Why Bambi?"
+author: "Tomás Capretto"
+date: 2021-05-23
+output: html_document
+description: A quick example comparing how to fit a GLM with Bambi and PyMC3
+---
+
+## Introduction
+
+I’ve been thinking about writing a new blog post for a while now but honestly
+there was nothing coming to my mind that made me think "Oh, yeah, this is
+interesting, it can be useful for someone else".
+And it was just a few hours ago that I realized I could write about something 
+quite curious that happened to me while trying to replicate a 
+[Bambi](https://bambinos.github.io/bambi/) model with [PyMC3](https://docs.pymc.io/).
+
+A couple of weeks ago [Agustina Arroyuelo](https://twitter.com/AgustinaArroyu1)
+told me she was trying to replicate a [model](https://bambinos.github.io/bambi/master/notebooks/wald_gamma_glm.html#Wald) 
+in an example notebook in Bambi and wanted my opinion on what she was doing. 
+After many attempts, neither of us could replicate the model successfully. It
+turned out to be we were messing up with the shapes of the priors and also had
+some troubles with the design matrix.
+
+The point of this post is not about good practices when doing Bayesian modeling 
+neither about modeling techniques. This simply aims to show how Bambi can save 
+us a lot of time, effort, and code when fitting not-so-trivial GLMs in Python. 
+
+Well, I think this is quite enough for an introduction. Let's better have a look 
+at the problem at hand.
+
+## Setup
+
+We use the `reticulate` package to enable Python in our R Markdown document. 
+`"rbambi"` is just a conda environment that has the latest version of Bambi 
+installed.
+
+```{r}
+library(ggplot2)
+library(reticulate)
+use_condaenv("rbambi", required = TRUE)
+```
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(eval = TRUE, fig.align = "center", out.width = "95%")
+```
+
+
+```{python py-setup}
+import arviz as az
+import bambi as bmb
+import numpy as np
+import pandas as pd
+import pymc3 as pm
+import theano.tensor as tt
+```
+
+## The problem
+
+In this problem we use a data set consisting of 67856 insurance policies and 
+4624 (6.8%) claims in Australia between 2004 and 2005. 
+The original source of this dataset is the book [Generalized Linear Models for 
+Insurance Data](http://www.businessandeconomics.mq.edu.au/our_departments/Applied_Finance_and_Actuarial_Studies/research/books/GLMsforInsuranceData)
+by Piet de Jong and Gillian Z. Heller.
+
+
+```{python}
+data = pd.read_csv(
+  "https://courses.ms.ut.ee/2020/glm/spring/uploads/Main/carclaims.csv"
+)
+data = data[data["claimcst0"] > 0]
+```
+
+The age (binned), the gender, and the area of residence are used to predict the 
+amount of the claim, conditional on the existence of the claim, because we are 
+only working with observations where there is a claim.
+
+We use a Wald regression model. This is a GLM where the random component follows
+a [Wald distribution](https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution).
+The link function we choose is the natural logarithm.
+
+## PyMC3 model
+
+### Data preparation
+
+To fit the model with PyMC3 we first need to create the model matrix. We need
+to represent `age`, `area`, and `gender` with dummy variables because they are
+categoric. We can think of the following objects as sub-matrices of the 
+design matrix in the model.
+
+```{python}
+intercept = np.ones((len(data), 1))
+age = pd.get_dummies(data["agecat"], drop_first=True).to_numpy()
+area = pd.get_dummies(data["area"], drop_first=True).to_numpy()
+gender = pd.get_dummies(data["gender"], drop_first=True).to_numpy()
+```
+
+Then we just stack horizontally these sub-matrices and convert the result to a 
+Theano tensor variable so we can compute the dot product between this matrix and
+the vector of coefficients when writing our model in PyMC3.
+
+```{python}
+X = np.hstack([intercept, age, gender, area])
+X = tt.as_tensor_variable(X)
+```
+
+### Fit
+
+We start declaring the priors for each of the predictors in the model. They are
+all independent Gaussian distributions. You may wonder where I took the values
+for the parameters of these distributions. I've just copied Bambi's default
+values for this particular problem.
+
+At this stage, it is **very important** to give appropiate shapes to all the
+objects we create in the model. For example, `β_age` is a random variable that
+represents the coefficients for the age variable. Since 5 dummy variables are
+used to represent the age, `β_age` has `shape=(5, 1)`, as well as the arrays
+passed to `mu` and `sigma`.
+
+```{python}
+# Create model and sample posterior
+with pm.Model() as model_pymc3:  
+    # Build predictors
+    β_0 = pm.Normal(
+        "β_0",
+        mu=np.array([[7.61]]),
+        sigma=np.array([[2.73]]),
+        shape=(1, 1)
+    )
+    β_age = pm.Normal(
+        "β_age",
+        mu=np.array([[0] * 5]).T,
+        sigma=np.array([[0.32, 6.94, 1.13, 5.44, 9.01]]).T,
+        shape=(5, 1)
+    )
+    β_gender = pm.Normal(
+        "β_gender",
+        mu=np.array([[0]]),
+        sigma=np.array([[1.304491]]),
+        shape=(1, 1)
+    )
+    β_area = pm.Normal(
+      "β_area",
+      mu=np.array([[0] * 5]).T,
+      sigma=np.array([[0.86, 0.25, 1.3, 0.76, 5.33]]),
+      shape=(5, 1)
+    )
+    
+    # Compute linear predictor
+    β = tt.concatenate([β_0, β_age, β_gender, β_area], axis=0)
+    
+    # Transform linear predictor
+    mu = tt.exp(X.dot(β))
+      
+    response = np.array([data["claimcst0"]]).T
+    pm.Wald(
+      "claim", 
+      mu=mu, 
+      lam=pm.HalfCauchy("claim_lam", beta=1), 
+      observed=response
+    )
+    idata_pymc = pm.sample(
+      tune=2000, 
+      draws=4000, 
+      random_seed=1234,
+      return_inferencedata=True
+    )
+
+```
+
+## Bambi model
+
+As you can see below, we don't need to prepare any data, or write priors by 
+hand. Bambi automatically obtains sensible default priors when they are not
+specified, and knows how to handle each variable type very well. 
+
+The model is specified using a model formula, quite similar to model formulas
+in R. The left-hand side of `~` is the response variable, and the rest 
+are the predictors. Here `C(agecat)` tells Bambi that `agecat` should be 
+interpreted as categoric. The `family` and `link` arguments are quite
+self-explanatory.
+
+Then we have the `.fit()` method, where you can pass arguments to the 
+`pm.sample()` function that's running on the background.
+
+```{python}
+model_bambi= bmb.Model(
+  "claimcst0 ~ C(agecat) + gender + area", 
+  data, 
+  family = "wald", 
+  link = "log"
+)
+idata_bambi = model_bambi.fit(tune=2000, draws=4000, random_seed=1234)
+```
+
+And that's it! A model that took several lines of codes to specify in PyMC3
+only took a few lines of code in Bambi. Quite an advantage, right?
+
+## Check results
+
+The simplicity we gain with Bambi would be worthless if the results turned out
+to be different. We want an interface that makes our job easier, without 
+affecting the quality of the inference. The following is a forest plot
+where the point gives the posterior mean and the bars indicate a 94% HDI.
+
+```{python, echo=FALSE}
+summary_pymc = az.summary(idata_pymc)
+summary_bambi = az.summary(idata_bambi)
+```
+
+```{r, echo=FALSE}
+summary_pymc = py$summary_pymc[1:4]
+summary_bambi = py$summary_bambi[1:4]
+
+names = c(
+  "β_0", "β_age[0]", "β_age[1]", "β_age[2]", "β_age[3]", "β_age[4]",
+  "β_gender", "β_area[0]", "β_area[1]", "β_area[2]", "β_area[3]",
+  "β_area[4]", "λ"
+)
+
+summary_pymc$row = seq(1, 26, by = 2) + 0.25
+summary_bambi$row = seq(1, 26, by = 2)  - 0.25
+summary_pymc$model = "PyMC3"
+summary_bambi$model = "Bambi"
+summary_pymc$panel = c("1-Intercept", rep("2-Effects", 11), "3-Dispersion")
+summary_bambi$panel = c("1-Intercept", rep("2-Effects", 11), "3-Dispersion")
+summary = rbind(summary_pymc, summary_bambi)
+```
+
+
+```{r, echo=FALSE, out.width="100%"}
+ggplot(summary, aes(color = model)) +
+  geom_point(
+    aes(mean, row)
+  ) +
+  geom_segment(
+    aes(x = `hdi_3%`, xend=`hdi_97%`, y = row, yend = row)
+  ) + 
+  labs(
+    x = "Marginal posterior",
+    y = "Paremeter"
+  ) + 
+  scale_color_manual(
+    values = c("#003f5c", "#ef5675")
+  ) + 
+  scale_y_continuous(
+    breaks = seq(1, 26, by = 2),
+    labels = names
+  ) + 
+  facet_grid(cols = vars(panel), scales = "free") +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank()
+  )
+#ggsave("models.png", width = 8, height = 5)
+```
+
+## Conclusion
+
+In this post, we saw how a model in PyMC3 can be re-written in Bambi using a 
+much simpler syntax. Bambi saved us time and code and still produced the same 
+result as in PyMC3. 
+
+Nevertheless, this doesn't mean we should always favor Bambi over PyMC3. 
+Not at all! Bambi has still to mature a lot and is not even close to being as 
+flexible as PyMC3 is. The take-home message is that while PyMC3 is awesome and 
+will be the way to go in most cases, Bambi's concise syntax is a tremendous 
+advantage when fitting not-so-trivial GLMs like the one shown here.
