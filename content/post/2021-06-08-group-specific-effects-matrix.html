@@ -1,0 +1,255 @@
+---
+title: "Design matrices for group-specific effects in formulae and lme4"
+author: "Tomás Capretto"
+date: 2021-06-08
+output: html_document
+description: Bambi uses the library formulae to automatically construct design 
+  matrices for both common and group-specific effects. This post compares design 
+  matrices for group-specific effects obtained with formulae for a variety of 
+  scenarios involving categorical variables with the ones obtained with the R 
+  package lme4.
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>A linear mixed model can be written as</p>
+<p><span class="math display">\[
+\boldsymbol{y} = \boldsymbol{X}\boldsymbol{\beta} + 
+                 \boldsymbol{Z}\boldsymbol{u} + \boldsymbol{\epsilon}
+\]</span></p>
+<p>where <span class="math inline">\(\boldsymbol{X}\)</span> and <span class="math inline">\(\boldsymbol{Z}\)</span> are the two design matrices we need
+to somehow construct when dealing with this type of model. <span class="math inline">\(\boldsymbol{X}\)</span> is
+the design matrix for the common (a.k.a. fixed) effects, and <span class="math inline">\(\boldsymbol{Z}\)</span> is the design
+matrix for the group-specific (a.k.a. random or varying) effects.</p>
+<p>It is quite easy to obtain the design matrix <span class="math inline">\(\boldsymbol{X}\)</span> in R using its
+popular formula interface. In Python, <a href="https://patsy.readthedocs.io/">patsy</a>
+provides equivalent functionality. Unfortunately, there aren’t as many
+alternatives to compute the matrix <span class="math inline">\(\boldsymbol{Z}\)</span>.</p>
+<p>In R, there’s <a href="https://CRAN.R-project.org/package=lme4">lme4</a>, the statistical
+package par excellence for mixed models. It extends the base formula interface
+to include group-specific effects via the pipe (<code>|</code>) operator and internally
+computes both <span class="math inline">\(\boldsymbol{X}\)</span> and <span class="math inline">\(\boldsymbol{Z}\)</span> without the user noticing.
+That’s great!</p>
+<p>In Python, we are working in <a href="https://bambinos.github.io/formulae/">formulae</a>,
+a library to handle mixed model formulas in <a href="https://bambinos.github.io/bambi">Bambi</a>.
+In this process, I’ve found <a href="https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf">Fitting Linear Mixed-Effects Models Using lme4</a>
+vignette extremely useful when figuring out how to compute the design matrix
+for the group-specific effects.</p>
+<p>Today, I was adding tests to make sure we are constructing <span class="math inline">\(\boldsymbol{Z}\)</span>
+appropriately and found myself comparing the matrices obtained with formulae with matrices
+obtained with lme4. Then I was like … why not making this a blog post?
+🤔</p>
+<p>… and so here we are! Just note this post mixes both R and Python code.
+I will try to be explicit when I’m using one language or the other. But if
+you’re reading a chunk and it looks like Python, it’s Python. And if it looks
+like R… you guessed! It’s R.</p>
+</div>
+<div id="setup" class="section level2">
+<h2>Setup</h2>
+<pre class="r"><code>library(dplyr)
+library(ggplot2)
+library(lme4)
+library(patchwork)</code></pre>
+<pre class="python"><code>from formulae import design_matrices</code></pre>
+</div>
+<div id="problem" class="section level2">
+<h2>Problem</h2>
+<p>Here we will be comparing design matrices for the group-specific terms in
+a mixed-effects model obtained with both lme4 and formulae. We’re using the
+dataset <code>Pixel</code> that comes with the R package <code>nlme</code>.</p>
+<pre class="r"><code>data(&quot;Pixel&quot;, package = &quot;nlme&quot;)
+head(Pixel)</code></pre>
+<pre><code>## Grouped Data: pixel ~ day | Dog/Side
+##   Dog Side day  pixel
+## 1   1    R   0 1045.8
+## 2   1    R   1 1044.5
+## 3   1    R   2 1042.9
+## 4   1    R   4 1050.4
+## 5   1    R   6 1045.2
+## 6   1    R  10 1038.9</code></pre>
+<p>We’re not interested in how to fit a certain model here. We’re interested in
+constructing the design matrix for group-specific effects with different
+characteristics. We’re using the following formula</p>
+<pre class="r"><code>f1 = ~ (0 + day | Dog) + (1 | Side / Dog)</code></pre>
+<p>where</p>
+<ul>
+<li><code>(0 + day | Dog)</code> means that <code>day</code> has a group-specific slope for each <code>Dog</code>.
+This is usually known as a random slope. The <code>0</code> indicates not to add the default
+group-specific intercept (because it’s added next).</li>
+<li><code>(1 | Side / Dog)</code> is equivalent to <code>(1 | Side) + (1 | Dog:Side)</code>. This means
+there’s a varying intercept for each <code>Side</code> and a varying intercept for each
+combination of <code>Dog</code> and <code>Side</code>. In other words, we have a nested group-specific
+intercept, where <code>Side</code> is nested within <code>Dog</code>.</li>
+</ul>
+<pre class="r"><code>lme4_terms = mkReTrms(findbars(f1), model.frame(subbars(f1), data = Pixel))</code></pre>
+<p><code>lme4_terms</code> contains much more information than what we need for this post.
+We mostly use <code>lme4_terms$Ztlist</code>, which is a list that contains the transpose of
+the group-specific effects model matrix, separated by term.
+These matrices are stored as sparse matrices of <code>dgCMatrix</code> class. If we
+want to have the sub-matrix for a given group-specific term as a base R matrix,
+we have to do <code>as.matrix(t(lme4_terms$Ztlist$[["term"]]))</code>.</p>
+<pre class="r"><code>names(lme4_terms$Ztlist)</code></pre>
+<pre><code>## [1] &quot;1 | Dog:Side&quot;  &quot;0 + day | Dog&quot; &quot;1 | Side&quot;</code></pre>
+<p>We have three group-specific terms. The first and the last ones are the group-specific
+intercepts we mentioned. These are the result of the nested group-specific
+intercept <code>(1 | Side / Dog)</code>. <code>Dog</code> is nested within <code>Side</code> and consequently
+there’s an intercept varying among <code>Side</code> and another varying among <code>Dog</code> within
+<code>Side</code>. The second term, <code>0 + day | Dog</code>, represents varying slope of <code>day</code> for
+each level of <code>Dog</code>.</p>
+<p>We finally store the sub-matrix for each term in different objects that we’ll
+later use when comparing results with those obtained with formulae.</p>
+<pre class="r"><code>day_by_dog = as.matrix(t(lme4_terms$Ztlist$`0 + day | Dog`))
+intercept_by_side = as.matrix(t(lme4_terms$Ztlist$`1 | Side`))
+intercept_by_side_dog = as.matrix(t(lme4_terms$Ztlist$`1 | Dog:Side`))</code></pre>
+<p>On the other hand, in Python, we use <code>design_matrices()</code> from the <code>formulae</code>
+library to obtain a <code>DesignMatrices</code> object. All the information associated with
+the group-specific terms is contained in <code>dm.group</code> and the sub-matrix
+corresponding to a particular term is accessed with <code>dm.group[term_name]</code>.</p>
+<pre class="python"><code>dm = design_matrices(&quot;(0 + day | Dog) + (1 | Side / Dog)&quot;, r.Pixel)</code></pre>
+<p>There’s a dictionary called <code>terms_info</code> within <code>dm.group</code>. To see the names
+of the group-specific effects we just retrieve the keys.</p>
+<pre class="python"><code>dm.group.terms_info.keys()</code></pre>
+<pre><code>## dict_keys([&#39;day|Dog&#39;, &#39;1|Side&#39;, &#39;1|Side:Dog&#39;])</code></pre>
+<p>Names differ a little with the ones from <code>lme4</code>, but they represent the same
+thing.</p>
+<pre class="python"><code>day_by_dog = dm.group[&#39;day|Dog&#39;]
+intercept_by_side = dm.group[&#39;1|Side&#39;]
+intercept_by_side_dog = dm.group[&#39;1|Side:Dog&#39;]</code></pre>
+<p>Now let’s compare those matrices!</p>
+</div>
+<div id="design-matrices-for-daydog" class="section level2">
+<h2>Design matrices for <code>(day|Dog)</code></h2>
+<p>Each cell in the following plot corresponds to each cell in the matrix. The lowest
+value for <code>day</code> is 0, represented by violet, and the highest value is 21,
+represented by yellow. The 10 columns represent the 10 groups in <code>Dog</code>, and the
+rows represent the observations in <code>Pixel</code>. Here, and also in the other cases,
+the left panel contains the matrix obtained with lme4 and the right panel the
+one produced with formulae.</p>
+<p><img src="/post/2021-06-08-group-specific-effects-matrix_files/figure-html/unnamed-chunk-10-1.png" width="95%" style="display: block; margin: auto;" /></p>
+<p>In this first case, both panels are representing the same data so we can happily
+conclude the result obtained with formulae matches the one from lme4. Yay!!</p>
+<p>But we’re humans and our eyes can fail so it’s better to check appropiately with</p>
+<pre class="r"><code>all(py$day_by_dog == day_by_dog)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<div id="design-matrices-for-1side" class="section level3">
+<h3>Design matrices for <code>(1|Side)</code></h3>
+<p>Here the first column represents <code>Side == "L"</code> and the second column represents
+<code>Side == "R"</code>. Since we’re dealing with an intercept, violet means 0 and yellow
+means 1. In this case it is much easier to see both results match.</p>
+<p><img src="/post/2021-06-08-group-specific-effects-matrix_files/figure-html/unnamed-chunk-12-1.png" width="95%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>all(py$intercept_by_side == intercept_by_side)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+<div id="design-matrices-for-1sidedog" class="section level3">
+<h3>Design matrices for <code>(1|Side:Dog)</code></h3>
+<p>But things are not always as one wishes. It’s clear from the following plot
+that both matrices aren’t equal here.</p>
+<p><img src="/post/2021-06-08-group-specific-effects-matrix_files/figure-html/unnamed-chunk-14-1.png" width="95%" style="display: block; margin: auto;" /></p>
+<p>But don’t worry my friend, there’s still something we can do!<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>.
+We can check the groups represented in each column of the matrices we’re plotting.</p>
+<pre class="r"><code>colnames(intercept_by_side_dog)</code></pre>
+<pre><code>##  [1] &quot;1:L&quot;  &quot;1:R&quot;  &quot;10:L&quot; &quot;10:R&quot; &quot;2:L&quot;  &quot;2:R&quot;  &quot;3:L&quot;  &quot;3:R&quot;  &quot;4:L&quot;  &quot;4:R&quot; 
+## [11] &quot;5:L&quot;  &quot;5:R&quot;  &quot;6:L&quot;  &quot;6:R&quot;  &quot;7:L&quot;  &quot;7:R&quot;  &quot;8:L&quot;  &quot;8:R&quot;  &quot;9:L&quot;  &quot;9:R&quot;</code></pre>
+<pre class="python"><code>dm.group.terms_info[&quot;1|Side:Dog&quot;][&quot;full_names&quot;]</code></pre>
+<pre><code>## [&#39;1|Side:Dog[L:1]&#39;, &#39;1|Side:Dog[L:10]&#39;, &#39;1|Side:Dog[L:2]&#39;, &#39;1|Side:Dog[L:3]&#39;, &#39;1|Side:Dog[L:4]&#39;, &#39;1|Side:Dog[L:5]&#39;, &#39;1|Side:Dog[L:6]&#39;, &#39;1|Side:Dog[L:7]&#39;, &#39;1|Side:Dog[L:8]&#39;, &#39;1|Side:Dog[L:9]&#39;, &#39;1|Side:Dog[R:1]&#39;, &#39;1|Side:Dog[R:10]&#39;, &#39;1|Side:Dog[R:2]&#39;, &#39;1|Side:Dog[R:3]&#39;, &#39;1|Side:Dog[R:4]&#39;, &#39;1|Side:Dog[R:5]&#39;, &#39;1|Side:Dog[R:6]&#39;, &#39;1|Side:Dog[R:7]&#39;, &#39;1|Side:Dog[R:8]&#39;, &#39;1|Side:Dog[R:9]&#39;]</code></pre>
+<p>And there it is! Matrices differ because columns are representing different
+groups. In lme4, groups are looping first along <code>Dog</code> and then along <code>Side</code>,
+while in formulae it is the other way around.</p>
+<p>We can simply re-order the columns of one of the matrices and generate
+and check whether they match or not.</p>
+<pre class="r"><code>intercept_by_side_dog_f = as.data.frame(py$intercept_by_side_dog)
+colnames(intercept_by_side_dog_f) = py$dm$group$terms_info[[&quot;1|Side:Dog&quot;]]$groups
+names_lme4_order = paste(
+  rep(c(&quot;L&quot;, &quot;R&quot;), 10), 
+  rep(c(1, 10, 2, 3, 4, 5, 6, 7, 8, 9), each = 2), 
+  sep = &quot;:&quot;
+)
+
+intercept_by_side_dog_f = intercept_by_side_dog_f[names_lme4_order] %&gt;%
+  as.matrix() %&gt;%
+  unname()</code></pre>
+<p><img src="/post/2021-06-08-group-specific-effects-matrix_files/figure-html/unnamed-chunk-18-1.png" width="95%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>all(intercept_by_side_dog_f == intercept_by_side_dog)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<p>And there it is! Results match 🤩</p>
+</div>
+</div>
+<div id="another-formula" class="section level2">
+<h2>Another formula</h2>
+<p>This other formula contains an interaction between categorical variables as the
+expression of the group-specific term, which is something we’re not covering
+above. In this case, we are going to subset the data so the design matrices are
+smaller and we can understand what’s going on with more ease.</p>
+<pre class="r"><code># Subset data
+Pixel2 = Pixel %&gt;%
+  filter(Dog %in% c(1, 2, 3), day %in% c(2, 4, 6)) %&gt;%
+  mutate(Dog = forcats::fct_drop(Dog))
+
+# Create terms with lme4
+f2 = ~ day +  (0 + Dog:Side | day)
+lme4_terms = mkReTrms(findbars(f2), model.frame(subbars(f2), data = Pixel2))
+dog_and_side_by_day = as.matrix(t(lme4_terms$Ztlist$`0 + Dog:Side | day`))</code></pre>
+<p>And now with <code>design_matrices()</code> in Python.</p>
+<pre class="python"><code># Create terms with 
+dm = design_matrices(&quot;(0 + Dog:Side|day)&quot;, r.Pixel2)
+dog_and_side_by_day = dm.group[&quot;Dog:Side|day&quot;]</code></pre>
+<div id="design-matrix-for-dogsideday" class="section level3">
+<h3>Design matrix for <code>(Dog:Side|day)</code></h3>
+<p>Although this term is called “slope”, it is not actually a slope like the one
+for <code>(day|Dog)</code>. Since both <code>Dog</code> and <code>Side</code> are categorical, the entries
+of this matrix consist of zeros and ones.</p>
+<p><img src="/post/2021-06-08-group-specific-effects-matrix_files/figure-html/unnamed-chunk-22-1.png" width="95%" style="display: block; margin: auto;" /></p>
+<p>We have the same problem than above, matrices don’t match. So we know what
+to do: look at the groups represented in the columns.</p>
+<pre class="r"><code>colnames(dog_and_side_by_day)</code></pre>
+<pre><code>##  [1] &quot;2&quot; &quot;2&quot; &quot;2&quot; &quot;2&quot; &quot;2&quot; &quot;2&quot; &quot;4&quot; &quot;4&quot; &quot;4&quot; &quot;4&quot; &quot;4&quot; &quot;4&quot; &quot;6&quot; &quot;6&quot; &quot;6&quot; &quot;6&quot; &quot;6&quot; &quot;6&quot;</code></pre>
+<pre class="python"><code>dm.group.terms_info[&quot;Dog:Side|day&quot;][&quot;full_names&quot;]</code></pre>
+<pre><code>## [&#39;Dog[1]:Side[L]|2.0&#39;, &#39;Dog[1]:Side[R]|2.0&#39;, &#39;Dog[2]:Side[L]|2.0&#39;, &#39;Dog[2]:Side[R]|2.0&#39;, &#39;Dog[3]:Side[L]|2.0&#39;, &#39;Dog[3]:Side[R]|2.0&#39;, &#39;Dog[1]:Side[L]|4.0&#39;, &#39;Dog[1]:Side[R]|4.0&#39;, &#39;Dog[2]:Side[L]|4.0&#39;, &#39;Dog[2]:Side[R]|4.0&#39;, &#39;Dog[3]:Side[L]|4.0&#39;, &#39;Dog[3]:Side[R]|4.0&#39;, &#39;Dog[1]:Side[L]|6.0&#39;, &#39;Dog[1]:Side[R]|6.0&#39;, &#39;Dog[2]:Side[L]|6.0&#39;, &#39;Dog[2]:Side[R]|6.0&#39;, &#39;Dog[3]:Side[L]|6.0&#39;, &#39;Dog[3]:Side[R]|6.0&#39;]</code></pre>
+<p>They represent the same groups<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>.
+We can look if there’s a difference in how the interactions are ordered within
+each group.</p>
+<pre class="r"><code>lme4_terms$cnms</code></pre>
+<pre><code>## $day
+## [1] &quot;Dog1:SideL&quot; &quot;Dog2:SideL&quot; &quot;Dog3:SideL&quot; &quot;Dog1:SideR&quot; &quot;Dog2:SideR&quot;
+## [6] &quot;Dog3:SideR&quot;</code></pre>
+<p>And again we see there’s a difference in how columns are being ordered.
+Let’s see if matrices match after we reorder the one obtained with formulae.</p>
+<pre class="r"><code>dog_and_side_by_day_f = as.data.frame(py$dog_and_side_by_day)
+colnames(dog_and_side_by_day_f) = py$dm$group$terms_info[[&quot;Dog:Side|day&quot;]]$full_names
+side = rep(rep(c(&quot;L&quot;, &quot;R&quot;), each = 3), 3)
+dog = rep(1:3, 6)
+day = rep(c(&quot;2.0&quot;, &quot;4.0&quot;, &quot;6.0&quot;), each = 6)
+
+names_lme4_order = glue::glue(&quot;Dog[{dog}]:Side[{side}]|{day}&quot;)
+dog_and_side_by_day_f = dog_and_side_by_day_f[names_lme4_order] %&gt;%
+  as.matrix() %&gt;%
+  unname()</code></pre>
+<p><img src="/post/2021-06-08-group-specific-effects-matrix_files/figure-html/unnamed-chunk-27-1.png" width="95%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>all(dog_and_side_by_day_f == dog_and_side_by_day)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>Although formulae works differently than lme4, and has different goals, we
+showed that formulae produces the same design matrices as lme4 for the variety
+of examples we covered. While case-based comparisons like these are not what one
+should rely on when writing software, the examples here were really helpful when
+working on the implementation in formulae and writing the corresponding tests.
+And if this post helps someone to better understand what’s going on when
+working with design matrices associated with group-specific effects, it will
+have been even more worth it!</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>I was undoubtedly
+talking to myself was quite disappointed at this time, wondering what I did wrong.
+Suffering the consequences of mistakes I wasn’t even aware I made. Well, not
+that dramatic. But now I’m happy the problem wasn’t real 😅<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>We have six 2s, six 4s and six 6s in both cases<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
