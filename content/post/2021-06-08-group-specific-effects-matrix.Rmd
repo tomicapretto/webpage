@@ -25,31 +25,31 @@ the design matrix for the common (a.k.a. fixed) effects, and $\boldsymbol{Z}$ is
 matrix for the group-specific (a.k.a. random or varying) effects. 
 
 It is quite easy to obtain the design matrix $\boldsymbol{X}$ in R using its 
-popular formula interface. In Python, [patsy](https://patsy.readthedocs.io/)
+popular formula interface. In Python, **[patsy](https://patsy.readthedocs.io/)**
 provides equivalent functionality. Unfortunately, there aren't as many 
 alternatives to compute the matrix $\boldsymbol{Z}$.
 
-In R, there's [lme4](https://CRAN.R-project.org/package=lme4), the statistical 
+In R, there's **[lme4](https://CRAN.R-project.org/package=lme4)**, the statistical 
 package par excellence for mixed models. It extends the base formula interface
-to include group-specific effects via the pipe (`|`) operator and internally 
+to include group-specific effects via the pipe operator (`|`) and internally 
 computes both $\boldsymbol{X}$ and $\boldsymbol{Z}$ without the user noticing.
 That's great!
 
-In Python, we are working in [formulae](https://bambinos.github.io/formulae/),
-a library to handle mixed model formulas in [Bambi](https://bambinos.github.io/bambi). 
+In Python, we are working on **[formulae](https://bambinos.github.io/formulae/)**,
+a library we use to handle mixed model formulas in [Bambi](https://bambinos.github.io/bambi). 
 In this process, I've found [Fitting Linear Mixed-Effects Models Using lme4](https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf)
 vignette extremely useful when figuring out how to compute the design matrix 
 for the group-specific effects.
 
 Today, I was adding tests to make sure we are constructing $\boldsymbol{Z}$ 
 appropriately and found myself comparing the matrices obtained with formulae with matrices 
-obtained with lme4. Then I was like ... why not making this a blog post? 
+obtained with **lme4**. Then I was like ... why not making this a blog post? 
 `r emo::ji("thinking")` 
 
-… and so here we are! Just note this post mixes both R and Python code. 
-I will try to be explicit when I'm using one language or the other. But if 
-you're reading a chunk and it looks like Python, it's Python. And if it looks 
-like R... you guessed! It's R.
+… and so here we are! But before we get started, just note this post mixes both
+R and Python code. I will try to be explicit when I'm using one language or the 
+other. But if you're reading a chunk and it looks like Python, it's Python. And 
+if it looks like R... you guessed! It's R.
 
 ## Setup
 
@@ -102,8 +102,8 @@ plot_matrix = function(matrix) {
 ## Problem
 
 Here we will be comparing design matrices for the group-specific terms in
-a mixed-effects model obtained with both lme4 and formulae. We're using the
-dataset `Pixel` that comes with the R package `nlme`.
+a mixed-effects model obtained with both **lme4** and **formulae**. We're using 
+the dataset `Pixel` that comes with the R package **nlme**.
 
 ```{r}
 data("Pixel", package = "nlme")
@@ -112,13 +112,13 @@ head(Pixel)
 
 We're not interested in how to fit a certain model here. We're interested in 
 constructing the design matrix for group-specific effects with different 
-characteristics. We're using the following formula
+characteristics. We use the following formula
 
 ```{r}
 f1 = ~ (0 + day | Dog) + (1 | Side / Dog)
 ```
 
-where
+where each part can be interpreted as follows
 
 * `(0 + day | Dog)` means that `day` has a group-specific slope for each `Dog`. 
 This is usually known as a random slope. The `0` indicates not to add the default
@@ -126,7 +126,7 @@ group-specific intercept (because it's added next).
 * `(1 | Side / Dog)` is equivalent to `(1 | Side) + (1 | Dog:Side)`. This means
 there's a varying intercept for each `Side` and a varying intercept for each 
 combination of `Dog` and `Side`. In other words, we have a nested group-specific 
-intercept, where `Side` is nested within `Dog`.
+intercept, where `Dog` is nested within `Side`.
 
 ```{r}
 lme4_terms = mkReTrms(findbars(f1), model.frame(subbars(f1), data = Pixel))
@@ -151,7 +151,7 @@ there's an intercept varying among `Side` and another varying among `Dog` within
 each level of `Dog`.
 
 We finally store the sub-matrix for each term in different objects that we'll
-later use when comparing results with those obtained with formulae.
+later use when comparing results with those obtained with **formulae**.
 
 ```{r}
 day_by_dog = as.matrix(t(lme4_terms$Ztlist$`0 + day | Dog`))
@@ -159,10 +159,10 @@ intercept_by_side = as.matrix(t(lme4_terms$Ztlist$`1 | Side`))
 intercept_by_side_dog = as.matrix(t(lme4_terms$Ztlist$`1 | Dog:Side`))
 ```
 
-On the other hand, in Python, we use `design_matrices()` from the `formulae`
+On the other hand, in Python, we use `design_matrices()` from the **formulae**
 library to obtain a `DesignMatrices` object. All the information associated with 
-the group-specific terms is contained in `dm.group` and the sub-matrix 
-corresponding to a particular term is accessed with `dm.group[term_name]`.
+the group-specific terms is contained in the `.group` attribute and the 
+sub-matrix corresponding to a particular term is accessed with `.group[term_name]`.
 
 ```{python}
 dm = design_matrices("(0 + day | Dog) + (1 | Side / Dog)", r.Pixel)
@@ -175,7 +175,7 @@ of the group-specific effects we just retrieve the keys.
 dm.group.terms_info.keys()
 ```
 
-Names differ a little with the ones from `lme4`, but they represent the same 
+Names differ a little with the ones from **lme4**, but they represent the same 
 thing.
 
 ```{python}
@@ -188,12 +188,12 @@ Now let's compare those matrices!
 
 ## Design matrices for `(day|Dog)`
 
-Each cell in the following plot corresponds to each cell in the matrix. The lowest
+Rectangles in the following plot correspond to the cells in the matrix. The lowest
 value for `day` is 0, represented by violet, and the highest value is 21, 
 represented by yellow. The 10 columns represent the 10 groups in `Dog`, and the
 rows represent the observations in `Pixel`. Here, and also in the other cases,
-the left panel contains the matrix obtained with lme4 and the right panel the 
-one produced with formulae.
+the left panel contains the matrix obtained with **lme4** and the right panel the 
+one produced with **formulae**.
 
 ```{r, echo=FALSE}
 g1 = plot_matrix(day_by_dog)
@@ -202,9 +202,10 @@ g1 | g2
 ```
 
 In this first case, both panels are representing the same data so we can happily 
-conclude the result obtained with formulae matches the one from lme4. Yay!!
+conclude the result obtained with **formulae** matches the one from **lme4**. Yay!!
 
-But we're humans and our eyes can fail so it's better to check appropiately with
+But we're humans and our eyes can fail so it's better to always check 
+appropiately with
 
 ```{r}
 all(py$day_by_dog == day_by_dog)
@@ -237,11 +238,12 @@ g2 = plot_matrix(py$intercept_by_side_dog)
 g1 | g2
 ```
 
-But don't worry my friend, there's still something we can do!^[I was undoubtedly
+But don't worry. We're not giving up. We still have things to do^[I was undoubtedly
 talking to myself was quite disappointed at this time, wondering what I did wrong. 
 Suffering the consequences of mistakes I wasn't even aware I made. Well, not 
 that dramatic. But now I'm happy the problem wasn't real `r emo::ji("sweat_smile")`].
-We can check the groups represented in each column of the matrices we're plotting. 
+We can check what are the groups being represented in the columns of the matrices
+we're plotting. 
 
 ```{r}
 colnames(intercept_by_side_dog)
@@ -252,8 +254,8 @@ dm.group.terms_info["1|Side:Dog"]["full_names"]
 ```
 
 And there it is! Matrices differ because columns are representing different 
-groups. In lme4, groups are looping first along `Dog` and then along `Side`,
-while in formulae it is the other way around.
+groups. In **lme4**, groups are looping first along `Dog` and then along `Side`,
+while in **formulae** it is the other way around.
  
 We can simply re-order the columns of one of the matrices and generate
 and check whether they match or not.
@@ -313,7 +315,7 @@ dog_and_side_by_day = dm.group["Dog:Side|day"]
 
 ### Design matrix for `(Dog:Side|day)`
 
-Although this term is called "slope", it is not actually a slope like the one
+Although this term is called slope, it is not actually a slope like the one
 for `(day|Dog)`. Since both `Dog` and `Side` are categorical, the entries 
 of this matrix consist of zeros and ones.
 
@@ -334,7 +336,7 @@ colnames(dog_and_side_by_day)
 dm.group.terms_info["Dog:Side|day"]["full_names"]
 ```
 
-They represent the same groups^[We have six 2s, six 4s and six 6s in both cases]. 
+But this they represent the same groups^[We have six 2s, six 4s and six 6s in both cases]. 
 We can look if there's a difference in how the interactions are ordered within 
 each group. 
 
@@ -342,8 +344,8 @@ each group.
 lme4_terms$cnms
 ```
 
-And again we see there's a difference in how columns are being ordered. 
-Let's see if matrices match after we reorder the one obtained with formulae.
+And again, thankfully, we see there's a difference in how columns are being ordered. 
+Let's see if matrices match after we reorder the one obtained with **formulae**.
 
 ```{r}
 dog_and_side_by_day_f = as.data.frame(py$dog_and_side_by_day)
@@ -370,11 +372,11 @@ all(dog_and_side_by_day_f == dog_and_side_by_day)
 
 ## Conclusion
 
-Although formulae works differently than lme4, and has different goals, we 
-showed that formulae produces the same design matrices as lme4 for the variety
+Although **formulae** works differently than **lme4**, and has different goals, we 
+showed that **formulae** produces the same design matrices as **lme4** for the variety
 of examples we covered. While case-based comparisons like these are not what one
 should rely on when writing software, the examples here were really helpful when
-working on the implementation in formulae and writing the corresponding tests.
+working on the implementation in **formulae** and writing the corresponding tests.
 And if this post helps someone to better understand what's going on when
 working with design matrices associated with group-specific effects, it will 
 have been even more worth it!
