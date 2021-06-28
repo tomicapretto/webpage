@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Hugo 0.83.1" />
+
+  <title>First weeks of GSoC &middot; Tomás Capretto</title>
+
+  <meta name="description" content="First post of a series about my contributions to Bambi in this Google Summer of Code season. This post highlights new features related to default priors and priors for group-specific effects." />
+
+  
+  <meta property="og:locale" content="en"/>
+
+  
+  <meta property="og:image" content="/images/profile_pic.png">
+
+  
+  <meta property="og:site_name" content="Tomás Capretto"/>
+  <meta property="og:title" content="First weeks of GSoC"/>
+  <meta property="og:description" content="First post of a series about my contributions to Bambi in this Google Summer of Code season. This post highlights new features related to default priors and priors for group-specific effects."/>
+  <meta property="og:url" content="/post/2021-06-28-first-weeks-of-gsoc/"/>
+  <meta property="og:type" content="article"/>
+  <meta property="article:published_time" content="2021-06-28T00:00:00Z"/>
+  <meta property="article:modified_time" content="2021-06-28T00:00:00Z"/>
+  <meta property="article:author" content="">
+  
+  
+  
+
+  <script type="application/ld+json">
+  {
+    "@context" : "http://schema.org",
+    "@type" : "Blog",
+    "name": "Tomás Capretto",
+    "url" : "/",
+    "image": "/images/profile_pic.png",
+    "description": "PhD candidate, Statistics"
+  }
+  </script>
+  
+  <link rel="stylesheet" href=/css/lioshi.css id="theme-stylesheet">
+  <script src=/js/highlight.pack.js></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  
+  <script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "BlogPosting",
+    "name": "First weeks of GSoC",
+    "headline": "First weeks of GSoC",
+    "datePublished": "2021-06-28T00:00:00Z",
+    "dateModified": "2021-06-28T00:00:00Z",
+    "author": {
+      "@type": "Person",
+      "name": "",
+      "url": "/"
+    },
+    "image": "/images/profile_pic.png",
+    "url": "/post/2021-06-28-first-weeks-of-gsoc/",
+    "description": "First post of a series about my contributions to Bambi in this Google Summer of Code season. This post highlights new features related to default priors and priors for group-specific effects."
+  }
+  </script>
+  
+
+
+  <link type="text/css"
+        rel="stylesheet"
+        href="/css/print.css"
+        media="print">
+
+  <link type="text/css"
+        rel="stylesheet"
+        href="/css/poole.css">
+
+  <link type="text/css"
+        rel="stylesheet"
+        href="/css/hyde.css">
+				
+  <link type="text/css"
+        rel="stylesheet"
+        href="/css/tcapretto.css">				
+
+  
+
+
+  
+
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700&display=swap">
+
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css"
+        integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk="
+        crossorigin="anonymous" />
+
+  <link rel="apple-touch-icon-precomposed"
+        sizes="144x144"
+        href="/apple-touch-icon-144-precomposed.png">
+
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  </head>
+<body>
+  <aside class="sidebar">
+  <div class="container">
+    <div class="sidebar-about">
+      
+        
+        <div class="author-image">
+          <img src="/images/profile_pic.png" class="img-circle img-headshot center" alt="Profile Picture">
+        </div>
+        
+      
+
+      <h1>Tomás Capretto</h1>
+      
+      <h3>PhD candidate, Statistics </h3>
+      <h3>IMASL (CONICET - UNSL) </h3>
+      
+      
+      
+      
+      
+      
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="/">Home</a>
+        </li>
+        <li>
+          <a href="/post/"> Posts </a>
+        </li><li>
+          <a href="/slides/"> Slides </a>
+        </li><li>
+          <a href="/about/"> About </a>
+        </li>
+      </ul>
+    </nav>
+
+    <section class="social-icons">
+      
+      <a href="https://twitter.com/CaprettoTomas" rel="me" title="Twitter">
+        <i class="fab fa-twitter" aria-hidden="true"></i>
+      </a>
+      
+      <a href="https://github.com/tomicapretto" rel="me" title="GitHub">
+        <i class="fab fa-github" aria-hidden="true"></i>
+      </a>
+      
+      <a href="https://stackoverflow.com/users/12266277/tomas-capretto" rel="me" title="Stack Overflow">
+        <i class="fab fa-stack-overflow" aria-hidden="true"></i>
+      </a>
+      
+      <a href="https://github.com/tomicapretto/cv/raw/master/cv-english/cv-english.pdf" rel="me" title="Curriculum Vitae">
+        <i class="fab far fa-file-alt" aria-hidden="true"></i>
+      </a>
+      
+    </section>
+  </div>
+</aside>
+
+
+  <main class="content container">
+  <div class="post">
+  <h1>First weeks of GSoC</h1>
+
+  <div class="post-date">
+    <time datetime="2021-06-28T00:00:00Z">Jun 28, 2021</time> · 4 min read
+  </div>
+
+  
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<p>I am really happy to participate in this Google Summer of Code season with
+<a href="https://numfocus.org/">NumFOCUS</a> to contribute to the <a href="https://bambinos.github.io/bambi">Bambi</a> library.
+The coding period ranges from June 7 to August 16, with an intermediate
+evaluation taking place between July 12 and July 16.</p>
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>My project is called <strong>Extend available models and default priors in Bambi</strong>.
+The main goal of this project is to add new families of generalized linear
+models, such as beta regression, robust linear regression
+(i.e. linear model with error following a T-Student distribution)<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>
+as well as multinomial regression. However, this raises a second problem, which
+is about default priors distributions.</p>
+<p>Default priors in Bambi are limited to the families implemented in the
+<a href="https://www.statsmodels.org/stable/glm.html">GLM</a> module in
+<a href="https://www.statsmodels.org/">statsmodels</a>, which does not include the families
+mentioned above. For this reason, it is first necessary to incorporate
+alternative automatic priors so new families work without requiring the user to
+manually specify priors.</p>
+<p>Therefore, these first weeks of the coding period were centered around
+understanding how default priors work on other high-level modeling packages
+such as <a href="https://paul-buerkner.github.io/brms/">brms</a> and
+<a href="https://mc-stan.org/rstanarm/">rstanarm</a>, how to translate their ideas
+into <a href="https://docs.pymc.io/">PyMC3</a> code, and finally how to implement everything
+within Bambi.</p>
+</div>
+<div id="alternative-default-priors" class="section level2">
+<h2>Alternative default priors</h2>
+<p>Currently, Bambi uses maximum likelihood estimates in the construction of its default
+priors. There are two limitations associated with this approach. First, current
+default priors don’t exist whenever uniquely identifiable maximum likelihood
+estimates don’t exist (e.g. <span class="math inline">\(p &gt; n\)</span> or complete separation scenarios).
+Secondly, these estimates are obtained via the GLM module in statsmodels, which
+means default priors can only be obtained for families made available in statsmodels.</p>
+<p>Based on the available documentation and simulations I’ve done, I decided to
+implement alternative default priors that are much like the
+<a href="https://mc-stan.org/rstanarm/articles/priors.html">default priors in rstanarm</a>.
+These priors aim to be weakly-informative in most scenarios and do not depend on
+maximum likelihood estimates. Their documentation is excellent and it was a
+great guide for my implementation.</p>
+<p><a href="https://github.com/bambinos/bambi/pull/360">This</a> is the PR where I implement
+alternative default priors inspired on rstanarm default priors. In addition,
+I also implement LKJ prior for the correlation matrices of group-specific effects.</p>
+<div id="how-to-invoke-alternative-default-priors" class="section level3">
+<h3>How to invoke alternative default priors</h3>
+<p>The <code>Model()</code> class has gained one new argument, <code>automatic_priors</code>, that can
+be equal to <code>"default"</code> to use Bambi’s default method, or <code>"rstanarm"</code> to use
+the alternative implementation<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>.</p>
+<pre class="python"><code>model = Model(&quot;y ~ x + z&quot;, data, automatic_priors=&quot;rstanarm&quot;)</code></pre>
+</div>
+<div id="how-to-use-lkj-priors-for-correlation-matrices-of-group-specific-effects" class="section level3">
+<h3>How to use LKJ priors for correlation matrices of group-specific effects</h3>
+<p>Group-specific effects can now have non-independent priors. Instead of using
+independent normal distributions, we can use a multivariate normal distribution
+whose correlation matrix has an LKJ prior distribution. This distribution
+depends on a parameter <span class="math inline">\(\eta &gt; 0\)</span>. If <span class="math inline">\(\eta=1\)</span>, the LJK prior is jointly uniform
+over all correlation matrices of the same dimension. If <span class="math inline">\(\eta &gt;1\)</span> increases,
+the mode of the distribution is the identity matrix. The larger the value of
+<span class="math inline">\(\eta\)</span> the more sharply peaked the density is at the identity matrix.</p>
+<p><code>Model</code> has an argument <code>priors_cor</code> where we can pass a dictionary to indicate
+which groups are going to have a LKJ prior. The keys of the dictionary are
+the names of the groups, and the values are the values for <span class="math inline">\(\eta\)</span>.</p>
+<p>In the following model, we have a varying intercept and varying slope for
+the groups given by <code>group</code>. These varying effects have a multivariate normal
+prior whose covariance matrix depends on a correlation matrix that has a
+LKJ hyperprior with <span class="math inline">\(\eta=1\)</span>.</p>
+<pre class="python"><code>model = Model(&quot;y ~ x + (x|group)&quot;, data, priors_cor={&quot;group&quot;: 1})</code></pre>
+<!-- ### Challenges when implementing alternative default priors -->
+<!-- rstanarm's [documentation on default priors](https://mc-stan.org/rstanarm/articles/priors.html)  -->
+<!-- is vast and rich and hence it would be pointless to replicate that here.  -->
+<!-- In this section I'm just going to highlight some key points about how their  -->
+<!-- defaults are similar or different to current default priors in Bambi and what -->
+<!-- challenges that carried when implementing new alternatives for Bambi. -->
+<!-- In essence, rstanarm's default priors are similar default priors in Bambi. -->
+<!-- There is an extensive use of Normal priors for regression coefficients and  -->
+<!-- right-skewed distributions for auxiliary parameters such as the residual standard  -->
+<!-- deviation for Gaussian models, shape for gamma, reciprocal dispersion for negative binomial, etc. -->
+<!-- But there are two important differences. The first, rstanarm computes parameters -->
+<!-- for the priors in a much simpler way. This usually involves standard deviations -->
+<!-- which are always available. The second, the priors for the group-specific terms -->
+<!-- in rstanarm are based on a multivariate Normal distribution with a -->
+<!-- LKJ prior the correlation matrix, while Bambi uses independent Normal priors. -->
+<!-- #### Common-level regression coefficients -->
+<!-- In both cases we have that the priors for common regression coefficients are -->
+<!-- independent normal distributions centered at 0. However, the differ in how they -->
+<!-- compute the standard deviation of the prior. -->
+<!-- ```{r, echo=FALSE} -->
+<!-- data.frame( -->
+<!--   library = c("rstanarm", "Bambi"), -->
+<!--   name = c("Normal", "Normal"), -->
+<!--   mean = c("0", "0"), -->
+<!--   sd = c("$2.5 \\cdot s_y/s_x$", "Complex dependency on ML estimates") -->
+<!-- ) %>% -->
+<!--   kable( -->
+<!--     col.names = c("Library", "Distribution", "$\\mu$", "$\\sigma$"), -->
+<!--     align = "c", -->
+<!--   ) %>% -->
+<!--   kable_styling(full_width = FALSE) -->
+<!-- ``` -->
+<!-- For the rstanarm prior we have that  -->
+<!-- $$ -->
+<!-- s_y = -->
+<!-- \begin{cases} -->
+<!-- \text{sd}(y) & \text{if } \:\: {\tt family=gaussian(link)}, \\ -->
+<!-- 1 & \text{otherwise}. -->
+<!-- \end{cases} -->
+<!-- $$ -->
+<!-- and $s_x$ is simply the standard deviation of the predictor $x$. -->
+<!-- On the other hand, with the excepsion of Gaussian linear regression,  -->
+<!-- there's no closed form expression of the standard deviation for these priors in Bambi. -->
+<!-- The whole derivation can be found in the paper  -->
+<!-- [Statistical details of the default priors in the Bambi library](https://arxiv.org/abs/1702.01201). -->
+<!-- #### Intercept -->
+<!-- Both rstanarm and Bambi use a Gaussian prior for the intercept. The computation of the  -->
+<!-- mean and standard deviation of this distribution depends on the model at hand. -->
+<!-- In the case of Gaussian linear regression, the situation is similar to the -->
+<!-- previous comparison. Both priors are normal and centered at the same value, -->
+<!-- the mean of the response. They again differ in how they compute  -->
+<!-- the standard deviation of that normal distribution. rstanarm uses $2.5 s_y$ and -->
+<!-- Bambi uses a function of the variance of the other priors and the predictor data. -->
+<!-- For other non-Gaussian models, rstanarm uses a mean of $0$ and a standard deviation -->
+<!-- of $2.5$, while Bambi uses a mean and a standard deviation that are a function -->
+<!-- of the MLE for an intercept-only model. -->
+<!-- #### Auxiliary parameters -->
+<!-- Both libraries use right-skewed distributions for the default prior on  -->
+<!-- auxiliary parameters (residual standard deviation for -->
+<!-- Gaussian, shape for gamma, reciprocal dispersion for negative binomial, etc.) -->
+<!-- rstanarm uses an exponential distribution with rate $1 / s_y$ and Bambi uses a  -->
+<!-- Half Student's T distribution with $\nu=4$ and $\sigma=s_y$ for Gaussian -->
+<!-- models, and a Half Cauchy distribution with a scale of 1 for non-Gaussian models. -->
+<!-- #### Group-level regression coefficients -->
+<!-- The main difference in the prior for the group-level effects is that  -->
+<!-- **Bambi uses independent priors, while rstanarm does not**. -->
+<!-- In Bambi, we have priors of the form -->
+<!-- $$ -->
+<!-- b_{j} \sim \text{Normal} \left(0, \sigma_b\right) -->
+<!-- $$ -->
+<!-- with hyperpriors -->
+<!-- $$ -->
+<!-- \sigma_b \sim \text{HalfNormal} (\tau) -->
+<!-- $$ -->
+<!-- where $\tau$ represents the standard deviation of the hyperprior. -->
+<!-- On the other hand, rstanarm puts a multivariate Normal distribution on the  -->
+<!-- prior for all the varying effects of a given group. -->
+<!-- Instead of placing independent priors on each $b_j$, it places a multivariate  -->
+<!-- Normal prior on the vector $\boldsymbol{b}$, which allows for correlated  -->
+<!-- group-specific effects. -->
+<!-- $$ -->
+<!-- \boldsymbol{b} \sim \text{MvNormal}\left(\boldsymbol{0}, \boldsymbol{\Sigma} \right) -->
+<!-- $$ -->
+<!-- In practice, the prior is not set on $\Sigma$. Instead, it is set on the -->
+<!-- correlation matrix $\Omega$, and use the following decomposition to recover the -->
+<!-- covariance matrix -->
+<!-- $$ -->
+<!-- \Sigma = \text{diag}(\sigma_b) \ \Omega \ \text{diag}(\sigma_b)  -->
+<!-- $$ -->
+<!-- We use an LKJ prior for the correlation matrix -->
+<!-- $$ -->
+<!-- \Omega \sim \text{LKJ}(\eta), \ \  \eta > 0 -->
+<!-- $$ -->
+<!-- If $\eta = 1$ (our default choice), the prior is jointly uniform over all correlation matrices of the same dimension as $\Omega$. If $\eta > 1$, then the mode of the distribution is the identity matrix. The larger the value of $\eta$ the more sharply peaked the density is at the identity matrix -->
+<!-- #### Cholesky decomposition -->
+<!-- For efficiency and numerical stability, the correlation matrix $\Omega$ can be parametrized by its (lower-triangular) Cholesky factor $L$, which can be seen as the square root of $\Omega$ -->
+<!-- $$ -->
+<!-- \boldsymbol{L}\boldsymbol{L^T} = \Omega = \begin{pmatrix} 1 & \rho_{u_0, u_1} \\ \rho_{u_0, u_1} & 1 \end{pmatrix}  -->
+<!-- $$ -->
+<!-- If $\boldsymbol{Z}_{\text{uncorr}}$ is a $2\times n$ matrix where the rows are 2 samples from uncorrelated random variables, then -->
+<!-- $$ -->
+<!-- \begin{split} -->
+<!--     \boldsymbol{Z}_{\text{corr}} & = -->
+<!--     \begin{pmatrix} \sigma_{u_0} & 0 \\ 0 & \sigma_{u_1} \end{pmatrix}  -->
+<!--     \boldsymbol{L} -->
+<!--     \boldsymbol{Z}_{\text{uncorr}} \\ -->
+<!--     & = \text{diag}(\sigma_u) \boldsymbol{L} \boldsymbol{Z}_{\text{uncorr}}      -->
+<!-- \end{split} -->
+<!-- $$ -->
+<!-- Then $\boldsymbol{Z}_{\text{corr}}$, of shape $(2, n)$, contains a sample of size $n$ of two correlated variables with the desired variances $\sigma_{u_0}^2$, $\sigma_{u_1}^2$, and correlation $\rho_{u_0, u_1}$. -->
+<!-- rstanarm and Bambi use normal priors centered at 0 for the group-level -->
+<!-- regression coefficients. The main difference is that **Bambi uses independent -->
+<!-- priors, while rstanarm does not**. In rstanarm the prior for varying effects -->
+<!-- is a multivariate normal prior whose covariance matrix depends on an LKJ prior  -->
+<!-- for the correlation matrix. Here I am ommiting some details on how the diagonal of the  -->
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>
+These two distributions are not members of the exponential family so using them
+as the distribution of the random component does not result in a generalized
+linear model in a strict sense. But I would usually refer to them as GLMs since
+the linear predictor, link function, and random component properties are still present.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>Both the argument name and the options may change<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+
+</div>
+
+
+  </main>
+
+  <footer>
+  <div class="copyright">
+    &copy; Tomás Capretto 2021 · <a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>
+  </div>
+  
+  <!DOCTYPE html>
+  
+  <html>
+  <head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+    
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+      
+      
+      <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"
+      onload="renderMathInElement(document.body);"></script>
+        </head>
+        ...
+      </html>  
+  </body>
+</footer>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/js/all.min.js"
+          integrity="sha256-MAgcygDRahs+F/Nk5Vz387whB4kSK9NXlDN3w58LLq0="
+          crossorigin="anonymous"></script>
+
+  
+
+  
+</body>
+</html>
