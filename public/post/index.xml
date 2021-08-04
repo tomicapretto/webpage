@@ -6,7 +6,34 @@
     <description>Recent content in Posts on Tomás Capretto</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 28 Jun 2021 00:00:00 +0000</lastBuildDate><atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 03 Aug 2021 00:00:00 +0000</lastBuildDate><atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Binomial family in Bambi</title>
+      <link>/post/2021-08-03-binomial-family-in-bambi/</link>
+      <pubDate>Tue, 03 Aug 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2021-08-03-binomial-family-in-bambi/</guid>
+      <description>Introduction Although GSoC 2021 is close to come to an end, there’s still a lot of exciting things going on around Bambi.</description>
+    </item>
+    
+    <item>
+      <title>New families in Bambi</title>
+      <link>/post/2021-07-14-new-families-in-bambi/</link>
+      <pubDate>Wed, 14 Jul 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2021-07-14-new-families-in-bambi/</guid>
+      <description>Introduction I’m very happy I could contribute with many exciting changes to Bambi.</description>
+    </item>
+    
+    <item>
+      <title>Robust linear regression in Bambi</title>
+      <link>/post/2021-07-05-robust-linear-regression-with-bambi/</link>
+      <pubDate>Mon, 05 Jul 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2021-07-05-robust-linear-regression-with-bambi/</guid>
+      <description>The next thing in my TODO list for this Google Summer of Code season with NumFOCUS is to add new families of models to Bambi.</description>
+    </item>
+    
     <item>
       <title>First weeks of GSoC</title>
       <link>/post/2021-06-28-first-weeks-of-gsoc/</link>
