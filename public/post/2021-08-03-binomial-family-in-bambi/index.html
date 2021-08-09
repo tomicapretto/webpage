@@ -274,8 +274,8 @@ independent Bernoulli trials). In other words, for a given row, we can think
 there’s a Binomial distribution where <strong>Dead</strong> represents the number of
 successes out of <strong>Total</strong> number of trials (each mouse is a trial).</p>
 <p>Before continuing, it’s important to note that if the data is originally
-aggregated as in the upper table, it can always be disaggregated to resemble
-the one in the lower table. So what’s the problem?</p>
+aggregated as in the lower table, it can always be disaggregated to resemble
+the one in the upper table. So what’s the problem?</p>
 <p>The answer is that there’s actually nothing wrong with having the data in such
 a granular form! But, if the data already comes aggregated, why doing extra
 work when we now have the Binomial family? Let’s have a look at the examples
@@ -393,13 +393,13 @@ idata_brn = model_brn.fit()</code></pre>
 <p>and explore the marginal posteriors</p>
 <pre class="python"><code>az.summary(idata_brn, kind=&quot;stats&quot;)</code></pre>
 <pre><code>##              mean     sd  hdi_3%  hdi_97%
-## Intercept -61.080  5.264 -70.758  -51.139
-## x          34.475  2.958  28.872   39.940</code></pre>
+## Intercept -61.141  5.015 -70.230  -51.811
+## x          34.510  2.818  29.438   39.787</code></pre>
 <p>We can predict the the probability of dying for out-of-sample data to see how
 it evolves with the different concentration levels.</p>
 <pre class="python"><code>new_data = pd.DataFrame({&quot;x&quot;: np.linspace(1.6, 2, num=200)})
 model_brn.predict(idata_brn, data=new_data)</code></pre>
-<p>Let’s visualize the mean of the probability of dying well as the HDI for
+<p>Let’s visualize the mean of the probability of dying as well as the HDI for
 the posterior of this probability:</p>
 <pre class="python"><code>fig, ax = plt.subplots()
 
@@ -450,8 +450,8 @@ the Bernoulli family. However, the new Binomial family allows us to
 as the one displayed above.</p>
 <pre class="python"><code>az.summary(idata_bnml, kind=&quot;stats&quot;)</code></pre>
 <pre><code>##              mean     sd  hdi_3%  hdi_97%
-## Intercept -60.923  5.154 -70.272  -51.468
-## x          34.386  2.897  29.144   39.769</code></pre>
+## Intercept -61.023  5.130 -70.040  -51.145
+## x          34.442  2.884  28.914   39.571</code></pre>
 <pre class="python"><code>model_bnml.predict(idata_bnml, data=new_data)</code></pre>
 <pre class="python"><code>fig, ax = plt.subplots()
 

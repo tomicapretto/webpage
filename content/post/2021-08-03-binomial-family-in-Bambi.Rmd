@@ -79,8 +79,8 @@ successes out of **Total** number of trials (each mouse is a trial).
 
 
 Before continuing, it's important to note that if the data is originally 
-aggregated as in the upper table, it can always be disaggregated to resemble 
-the one in the lower table. So what's the problem? 
+aggregated as in the lower table, it can always be disaggregated to resemble 
+the one in the upper table. So what's the problem? 
 
 The answer is that there's actually nothing wrong with having the data in such
 a granular form! But, if the data already comes aggregated, why doing extra
@@ -180,7 +180,7 @@ new_data = pd.DataFrame({"x": np.linspace(1.6, 2, num=200)})
 model_brn.predict(idata_brn, data=new_data)
 ```
 
-Let's visualize the mean of the probability of dying well as the HDI for
+Let's visualize the mean of the probability of dying as well as the HDI for
 the posterior of this probability:
 
 ```{python, message=FALSE}
@@ -213,7 +213,7 @@ plt.show()
 Before writing down the model with the Binomial family, let's take a moment to
 review new notation that was added specifically for this purpose.
 
-The model formula syntax only allows us to pass one variable on its LHS. Then,
+The model formula syntax only allows us to pass one variable on its LHS. Then, 
 how do we tell Bambi that what we want to model is the **proportion** that
 results from dividing **y** over **n**?
 
@@ -237,7 +237,6 @@ as the one displayed above.
 ```{python}
 az.summary(idata_bnml, kind="stats")
 ```
-
 
 ```{python}
 model_bnml.predict(idata_bnml, data=new_data)
