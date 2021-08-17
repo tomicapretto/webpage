@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Hugo 0.83.1" />
 
-  <title>Posts &middot; Tomás Capretto</title>
+  <title>GSOC 2021: Final evaluation &middot; Tomás Capretto</title>
 
-  <meta name="description" content="" />
+  <meta name="description" content="Final post about Google Summer of Code 2021. This post sums up my contributions to the Bambi library during the ten weeks of this program." />
 
   
   <meta property="og:locale" content="en"/>
@@ -17,9 +17,9 @@
 
   
   <meta property="og:site_name" content="Tomás Capretto"/>
-  <meta property="og:title" content="Posts"/>
-  <meta property="og:description" content=""/>
-  <meta property="og:url" content="/post/"/>
+  <meta property="og:title" content="GSOC 2021: Final evaluation"/>
+  <meta property="og:description" content="Final post about Google Summer of Code 2021. This post sums up my contributions to the Bambi library during the ten weeks of this program."/>
+  <meta property="og:url" content="/post/2021-08-17-gsoc-2021-final-evaluation/"/>
   <meta property="og:type" content="article"/>
   <meta property="article:published_time" content="2021-08-17T00:00:00Z"/>
   <meta property="article:modified_time" content="2021-08-17T00:00:00Z"/>
@@ -48,8 +48,8 @@
   {
     "@context": "http://schema.org",
     "@type": "BlogPosting",
-    "name": "Posts",
-    "headline": "Posts",
+    "name": "GSOC 2021: Final evaluation",
+    "headline": "GSOC 2021: Final evaluation",
     "datePublished": "2021-08-17T00:00:00Z",
     "dateModified": "2021-08-17T00:00:00Z",
     "author": {
@@ -58,8 +58,8 @@
       "url": "/"
     },
     "image": "/images/profile_pic.png",
-    "url": "/post/",
-    "description": ""
+    "url": "/post/2021-08-17-gsoc-2021-final-evaluation/",
+    "description": "Final post about Google Summer of Code 2021. This post sums up my contributions to the Bambi library during the ten weeks of this program."
   }
   </script>
   
@@ -102,7 +102,6 @@
   <link rel="shortcut icon" href="/favicon.png">
 
   
-  <link href="/post/index.xml" rel="alternate" type="application/rss+xml" title="Tomás Capretto" />
   </head>
 <body>
   <aside class="sidebar">
@@ -167,55 +166,50 @@
 
 
   <main class="content container">
-  <ul class="posts">
-  <h1>Posts</h1>
-  <li>
-    <span>
-        <a href="/post/2021-08-17-gsoc-2021-final-evaluation/">GSOC 2021: Final evaluation</a>
-        <time class="pull-right post-list" datetime="2021-08-17T00:00:00Z">Aug 17, 2021</time>
-    </span>
-  </li><li>
-    <span>
-        <a href="/post/2021-08-03-binomial-family-in-bambi/">Binomial family in Bambi</a>
-        <time class="pull-right post-list" datetime="2021-08-03T00:00:00Z">Aug 3, 2021</time>
-    </span>
-  </li><li>
-    <span>
-        <a href="/post/2021-07-14-new-families-in-bambi/">New families in Bambi</a>
-        <time class="pull-right post-list" datetime="2021-07-14T00:00:00Z">Jul 14, 2021</time>
-    </span>
-  </li><li>
-    <span>
-        <a href="/post/2021-07-05-robust-linear-regression-with-bambi/">Robust linear regression in Bambi</a>
-        <time class="pull-right post-list" datetime="2021-07-05T00:00:00Z">Jul 5, 2021</time>
-    </span>
-  </li><li>
-    <span>
-        <a href="/post/2021-06-28-first-weeks-of-gsoc/">First weeks of GSoC</a>
-        <time class="pull-right post-list" datetime="2021-06-28T00:00:00Z">Jun 28, 2021</time>
-    </span>
-  </li><li>
-    <span>
-        <a href="/post/2021-06-08-group-specific-effects-matrix/">Design matrices for group-specific effects in formulae and lme4</a>
-        <time class="pull-right post-list" datetime="2021-06-08T00:00:00Z">Jun 8, 2021</time>
-    </span>
-  </li><li>
-    <span>
-        <a href="/post/2021-05-24-bambi-wald/">Why Bambi?</a>
-        <time class="pull-right post-list" datetime="2021-05-24T00:00:00Z">May 24, 2021</time>
-    </span>
-  </li><li>
-    <span>
-        <a href="/post/2020-11-03-bingo-cards-in-r/">How to generate bingo cards in R</a>
-        <time class="pull-right post-list" datetime="2020-11-03T00:00:00Z">Nov 3, 2020</time>
-    </span>
-  </li><li>
-    <span>
-        <a href="/post/2020-02-25-hello-world/">Hello world</a>
-        <time class="pull-right post-list" datetime="2020-02-25T00:00:00Z">Feb 25, 2020</time>
-    </span>
-  </li>
+  <div class="post">
+  <h1>GSOC 2021: Final evaluation</h1>
+
+  <div class="post-date">
+    <time datetime="2021-08-17T00:00:00Z">Aug 17, 2021</time> · 2 min read
+  </div>
+
+  
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<p>In this short blogpost, I’m going to summarize my contributions to the Bambi
+library during this Google Summer of Code.</p>
+<p>GSoC has been great. I’ve learnt so much during the past weeks. And I’m
+obviously eager to keep learning and doing stuff with
+<a href="https://bambinos.github.io/bambi">Bambi</a> in the future. The following is a
+summary of what we were able to achieve during these time of code:</p>
+<ul>
+<li>Implemented new default priors <a href="https://github.com/bambinos/bambi/pull/360">#360</a>, <a href="https://github.com/bambinos/bambi/pull/385">#385</a>.</li>
+<li>Added new Student-T family <a href="https://github.com/bambinos/bambi/pull/367">#367</a>.</li>
+<li>Added new Beta family <a href="https://github.com/bambinos/bambi/pull/368">#368</a>.</li>
+<li>Implemented predictions <a href="https://github.com/bambinos/bambi/pull/372">#372</a>.</li>
+<li>Improved internal model specification by splitting it into smaller and composable
+classes <a href="https://github.com/bambinos/bambi/pull/366">#366</a>.</li>
+<li>Added the new Binomial family <a href="https://github.com/bambinos/bambi/pull/386">#386</a>.
+This also implied <a href="https://github.com/bambinos/formulae/pull/48">some changes</a>
+in its sibling project, <a href="https://bambinos.github.io/formulae">formulae</a>.</li>
 </ul>
+<p>This, with many other smaller changes or improvements that you can find
+<a href="https://github.com/bambinos/bambi/commits?author=tomicapretto">here</a> were
+included in <a href="https://pypi.org/project/bambi/0.6.0/">Bambi 0.6.0</a>.</p>
+<p>On the other hand, the items on my original proposal that left to do are
+multinomial regression and ordered categorical terms. I’ve started to do some
+work on the formulae side, but these features require a more involved work in
+Bambi, and thus it is left for future contributions.</p>
+<p>To conclude, I want to thank Google for having such an amazing program and
+everyone who contributed or helped me to contribute to Bambi. Specially, I want
+to recognize the the work of my mentors Ravin Kumar and Thomas Wiecki, and my
+director Osvaldo Martin for all the support, feedback, and work
+during this program.</p>
+
+</div>
+
+
   </main>
 
   <footer>

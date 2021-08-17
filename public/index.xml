@@ -6,7 +6,16 @@
     <description>Recent content on Tomás Capretto</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 03 Aug 2021 00:00:00 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 17 Aug 2021 00:00:00 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>GSOC 2021: Final evaluation</title>
+      <link>/post/2021-08-17-gsoc-2021-final-evaluation/</link>
+      <pubDate>Tue, 17 Aug 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2021-08-17-gsoc-2021-final-evaluation/</guid>
+      <description>In this short blogpost, I’m going to summarize my contributions to the Bambi library during this Google Summer of Code.</description>
+    </item>
+    
     <item>
       <title>Binomial family in Bambi</title>
       <link>/post/2021-08-03-binomial-family-in-bambi/</link>
