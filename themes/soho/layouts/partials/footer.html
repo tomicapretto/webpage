@@ -1,8 +1,0 @@
-<footer>
-  <div class="copyright">
-    &copy; {{ $.Site.Params.copyright }} {{ now.Format "2006"}} · {{ with $.Site.Params.license }}<a href="{{ $.Site.Params.licenseURL }}">{{ . | safeHTML }}</a>{{end}}
-  </div>
-  <!--{{ partial "footer_mathjax" . }} -->
-  {{ partial "katex.html" . }}  <!-- katex is faster than mathjax -->
-  </body>
-</footer>
